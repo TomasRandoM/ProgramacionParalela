@@ -2,6 +2,7 @@
 #include <pthread.h>
 #include <vector>
 #include <unistd.h>
+#include <cstdlib> 
 
 using namespace std;
 
@@ -9,15 +10,14 @@ int compartida = 0;
 void* tarea1(void* identificador);
 void* tarea2(void* identificador);
 
-int main() {
-    int N;
-    int M;
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        cout << "Debe usar 2 argumentos" << endl;
+        return 1;
+    }
 
-    cout << "Ingrese N: ";
-    cin >> N;
-
-    cout << "Ingrese M: ";
-    cin >> M;
+    int N = stoi(string(argv[1]));
+    int M = stoi(string(argv[2]));
 
     vector<pthread_t> hilos1(N);
     vector<pthread_t> hilos2(M);
@@ -51,8 +51,8 @@ int main() {
 }
 
 void* tarea1(void* identificador) {
-    cout << "Thread1 instancia " << (long) identificador << endl;
-    double randomTime = rand() / RAND_MAX;
+    cout << "Thread1 instancia " << (long) identificador << " " << endl;
+    double randomTime = ((double) rand()) / RAND_MAX;
     
     sleep(randomTime);
     compartida = compartida + 1;
@@ -60,8 +60,8 @@ void* tarea1(void* identificador) {
 }
 
 void* tarea2(void* identificador) {
-    cout << "Thread2 instancia " << (long) identificador << endl;
-    double randomTime = rand() / RAND_MAX;
+    cout << "Thread2 instancia " << (long) identificador << " " << endl;
+    double randomTime = ((double) rand()) / RAND_MAX;
     
     sleep(randomTime);
     cout << compartida << endl;
