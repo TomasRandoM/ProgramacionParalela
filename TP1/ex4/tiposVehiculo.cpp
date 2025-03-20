@@ -1,1 +1,0 @@
-enum class Categoria {MOTOCICLETA; COCHE; UTILITARIO; PESADO;}
