@@ -81,8 +81,6 @@ void* jugar(void* id) {
         tableros.push_back(tab);
     }
     int revisado = 99;
-    cout << "========= JUGADOR " << identificador << endl;
-    tableros[0].imprimir();
     while (stop != true) {
         if (valor != 99 && revisado != valor) {
             revisado = valor;
