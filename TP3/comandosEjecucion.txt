@@ -1,0 +1,19 @@
+ex1 compilación:
+g++ ex1.cpp -o ex1
+ex1 ejecución:
+./ex1
+
+ex2 compilación:
+g++ ex2.cpp -o ex2
+ex2 ejecución:
+./ex2
+
+ex3 compilación:
+g++ ex3.cpp -o ex3
+ex3 ejecución:
+./ex3
+
+ex4 compilación (dentro de carpeta ex4):
+g++ ex4.cpp -o ex4
+ex4 ejecución (dentro de carpeta ex4):
+./ex4

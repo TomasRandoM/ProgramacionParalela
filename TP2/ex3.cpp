@@ -1,122 +1,111 @@
 #include <iostream>
-#include <pthread.h>
 #include <vector>
-#include <mutex>
 #include <unistd.h>
 #include <sys/wait.h>
 
 using namespace std;
 
-int main() {
-    int pipesUsuarioCola[2];
-    int pipesColaImpresora[2];
-    int pipesImpresoraCola[2];
-    vector<int[2]> pipesUsuarios(10);
+int main(int argc, char* argv[]) {
+
+    if (argc != 2) {
+        cout << "Debe indicar 1 argumento" << endl;
+        return 1;
+    }
+
+    int n = stoi(string(argv[1]));
+    bool stop = false;
+    pid_t pid = 2;
+    int pipefd[2];
+    vector<int[2]> pipes(n);
+    vector<int[2]> pipesToPlayer(n);
     int id;
+    float puntuacion = 0;
+    int numeroRandom;
 
-    if (pipe(pipesUsuarioCola) == -1) {
-        throw runtime_error("Error creando pipe.");
-    }
-
-    if (pipe(pipesColaImpresora) == -1) {
-        throw runtime_error("Error creando pipe.");
-    }
-
-    if (pipe(pipesImpresoraCola) == -1) {
-        throw runtime_error("Error creando pipe.");
-    }
-
-    for (int i = 0; i < 10; i++) {
-        if (pipe(pipesUsuarios[i]) == -1) {
-            throw runtime_error("Error creando pipe.");
-        }
-    }
-    pid_t pid = 99;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < n; i++) {
         if (pid > 0) {
+            if (pipe(pipes[i]) == -1) {
+                cout << "Error creando pipe" << endl;
+                return 1;
+            }
+            if (pipe(pipesToPlayer[i]) == -1) {
+                cout << "Error creando pipe" << endl;
+                return 1;
+            }
             pid = fork();
             id = i;
-            if (pid == 0) {
-                break;
-            }
-
-        }
-    }
-
-    if (pid == 0) {
-        close(pipesUsuarioCola[0]);
-        close(pipesColaImpresora[0]);
-        close(pipesColaImpresora[1]);
-        close(pipesImpresoraCola[1]);
-        close(pipesImpresoraCola[0]);
-        for (int i = 0; i < 10; i++) {
-            close(pipesUsuarios[i][1]);
-        }
-        write(pipesUsuarioCola[1], &id, sizeof(id));
-
-        int respuesta;
-        read(pipesUsuarios[id][0], &respuesta, sizeof(respuesta));
-
-        close(pipesUsuarioCola[0]);
-
-        for (int i = 0; i < 10; i++) {
-            close(pipesUsuarios[i][1]);
-        }
-    } else {
-        int cont = 0;
-        int confirmacion = 1;
-        int trabajo;
-        close(pipesUsuarioCola[1]);
-        for (int i = 0; i < 10; i++) {
-            close(pipesUsuarios[i][0]);
-        }
-
-        pid = fork();
-
-        if (pid == 0) {
-            close(pipesColaImpresora[0]);
-            close(pipesImpresoraCola[1]);
-            while (cont != 10) {
-                if (cont == 0) {
-                    read(pipesUsuarioCola[0], &trabajo, sizeof(trabajo));
-                    write(pipesUsuarios[trabajo][1], &trabajo, sizeof(trabajo)); //Confirmación al usuario
-                    cout << "Usuario " << trabajo << " agregó archivo a la cola de impresión" << endl;
-                    write(pipesColaImpresora[1], &trabajo, sizeof(trabajo));
-                } else {
-                    read(pipesUsuarioCola[0], &trabajo, sizeof(trabajo)); //Leo el archivo del usuario
-                    write(pipesUsuarios[trabajo][1], &trabajo, sizeof(trabajo)); //Confirmación al usuario
-                    read(pipesImpresoraCola[0], &confirmacion, sizeof(confirmacion)); //Leo confirmación de que la impresora está vacía
-                    cout << "Usuario " << trabajo << " agregó archivo a la cola de impresión" << endl;
-                    write(pipesColaImpresora[1], &trabajo, sizeof(trabajo)); //Mando a la impresora el archivo
-                }
-                cont++;
-            }
-            close(pipesColaImpresora[1]);
-            close(pipesImpresoraCola[0]);
         } else {
-            close(pipesColaImpresora[1]);
-            close(pipesImpresoraCola[0]);
-            while (cont != 10) {
-                cont++;
-                read(pipesColaImpresora[0], &trabajo, sizeof(trabajo));
-                cout << "Imprimiendo archivo de usuario" << endl;
-                write(pipesImpresoraCola[1], &confirmacion, sizeof(confirmacion));
-            }
-            close(pipesColaImpresora[0]);
-            close(pipesImpresoraCola[1]);
-
-        }
-
-        close(pipesUsuarioCola[0]);
-        for (int i = 0; i < 10; i++) {
-            close(pipesUsuarios[i][1]);
+            break;
         }
     }
+
+    srand(getpid());
 
     if (pid > 0) {
-        int status;
-        for (int i = 0; i < 11; i++) {
-            wait(&status);
+        vector<float> puntuaciones(n);
+        vector<int> estados(n);
+        float cartas[10] = {1, 2, 3, 4, 5, 6, 7, 0.5, 0.5, 0.5};
+        int contador = 0;
+        while (stop == false) {
+            for (int i = 0; i < n; i++) {
+                if (estados[i] == 0) {
+                    numeroRandom = rand() % 10;
+                    write(pipesToPlayer[i][1], &cartas[numeroRandom], sizeof(cartas[numeroRandom]));
+                    puntuaciones[i] = puntuaciones[i] + cartas[numeroRandom];
+                }
+            }
+            
+            for (int i = 0; i < n; i++) {
+                if (estados[i] == 0) {
+                    read(pipes[i][0], &estados[i], sizeof(estados));
+                    if (estados[i] != 0) {
+                        contador++;
+                    }
+                }
+            }
+
+            if (contador == n) {
+                float max = 0;
+                int winner;
+                for (int i = 0; i < n; i++) {
+                    if (estados[i] != 2) {
+                        if ((puntuaciones[i] <= 7.5) && (puntuaciones[i] > max)) {
+                            max = puntuaciones[i];
+                            winner = i;
+                        }
+                    }
+                }
+
+                if (max != 0) {
+                    cout << "El ganador es el jugador: " << winner << " con puntos: " << max << endl;
+                } else {
+                    cout << "Nadie ganó" << endl;
+                }
+                stop = true;
+            }
+            
+        }
+        for (int i = 0; i < n; i++) {
+            close(pipesToPlayer[i][1]);
+            close(pipesToPlayer[i][0]);
+            close(pipes[i][1]);
+            close(pipes[i][0]);
+        }
+    } else {
+        float puntAux;
+        while (stop == false) {
+            read(pipesToPlayer[id][0], &puntAux, sizeof(puntAux));
+            puntuacion = puntuacion + puntAux;
+            numeroRandom = rand() % 2;
+            if (puntuacion > 7.5) {
+                numeroRandom = 2;
+            }
+            cout << "El jugador " << id << " recibió " << puntAux << " y ahora tiene " << puntuacion << " puntos, por lo que elige la acción " << numeroRandom << endl;
+            write(pipes[id][1], &numeroRandom, sizeof(numeroRandom));
+            if (numeroRandom != 0) {
+                stop = true;
+            }
+            
         }
     }
     return 0;

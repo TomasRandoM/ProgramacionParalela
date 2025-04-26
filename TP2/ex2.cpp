@@ -1,64 +1,63 @@
 #include <iostream>
-#include <pthread.h>
 #include <vector>
-#include <mutex>
+#include <unistd.h>
+#include <sys/wait.h>
 
 using namespace std;
 
-mutex mtx;
-vector<int> cola;
-int cont = 0;
-void* usuario(void* args);
-void* impresora(void* args);
+int compartida = 0;
+void tarea1(int identificador);
+void tarea2(int identificador);
 
-int main() {
-    vector<pthread_t> hilos(12);
-    int r;
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        cout << "Debe usar 2 argumentos" << endl;
+        return 1;
+    }
 
-    for (int i = 0; i < 12; i++) {
-        if (i < 2) {
-            r = pthread_create(&hilos[i], NULL, impresora, NULL);
+    int N = stoi(string(argv[1]));
+    int M = stoi(string(argv[2]));
+    pid_t pid = 2;
+
+    for (int i = 0; i < N + M; i++) {
+        if (pid > 0) {
+            pid = fork();
+            if (pid == 0) {
+                if (i >= N) {
+                    tarea2(i - N);
+                } else {
+                    tarea1(i);
+                } 
+            }
         } else {
-            r = pthread_create(&hilos[i], NULL, usuario, (void*) (long) (i));
-        }
-        if (r != 0) {
-            throw runtime_error("Error creando hilo.");
+            break;
         }
     }
 
-    for (int i = 0; i < 12; i++) {
-        pthread_join(hilos[i], NULL);
+    if (pid > 0) {
+        for (int i = 0; i < N + M; i++) {
+            wait(NULL);
+        }
+        cout << "Fin del programa" << endl;
     }
+    
     return 0;
 }
 
-void* impresora(void* args) {
-    bool stop = false;
-    while (stop != true) {
-        unique_lock<mutex> lock(mtx);
-        if (!cola.empty()) {
-            cont++;
-            cola.pop_back();
-            cout << "Imprimiendo archivo de usuario" << endl;
-        }   
-        if (cont == 10) {
-            stop = true;
-            return NULL;
-        }  
-    }
-    return NULL;   
+void tarea1(int identificador) {
+    cout << "Thread1 instancia " << identificador << " " << endl;
+    double randomTime = ((double) rand()) / RAND_MAX;
+    
+    sleep(randomTime);
+    compartida = compartida + 1;
 }
 
-void* usuario(void* args) {
-    bool stop = false;
-    while (stop != true) {
-        unique_lock<mutex> lock(mtx);
-        if (cola.size() < 4) {
-            int id = (int) (long) args;
-            stop = true;
-            cola.push_back(id);
-            cout << "Usuario " << id << " agregó archivo a la cola de impresión" << endl;
-        }
-    }
-    return NULL;
+void tarea2(int identificador) {
+    cout << "Thread2 instancia " << identificador << " " << endl;
+    double randomTime = ((double) rand()) / RAND_MAX;
+    
+    sleep(randomTime);
+    cout << compartida << endl;
 }
+
+//Se puede observar que no se incrementa el valor de la variable "compartida", esto sucede ya que, a diferencia de los hilos, los procesos reciben una copia de la memoria, por ende, no tienen una variable compartida entre todos.

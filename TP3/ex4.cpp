@@ -111,16 +111,19 @@ int main() {
                     if (cont == 0) {
                         trabajo = cola.back();
                         write(pipesColaImpresora[0][1], &trabajo, sizeof(trabajo));
-                        cola.pop_back();
+                        cout << " " << endl;
+			cola.pop_back();
                         trabajo = cola.back();
                         write(pipesColaImpresora[1][1], &trabajo, sizeof(trabajo));
-                        cola.pop_back();
+                        cout << " " << endl;
+			cola.pop_back();
                         cont = cont + 2;
                     } else {
                         if (impresora != -1) {
                             trabajo = cola.back();
                             write(pipesColaImpresora[impresora][1], &trabajo, sizeof(trabajo));
-                            impresora = -1;
+                            cout << " " << endl;
+		            impresora = -1;
                             cont++;
                             cola.pop_back();
                         }
@@ -151,7 +154,7 @@ int main() {
                     cont = 10;
                     break;
                 }
-                cout << "Imprimiendo archivo de usuario"  << endl;
+                cout << "Impresora " << id << " imprimiendo archivo de usuario"  << endl;
                 write(pipesImpresoraCola[1], &id, sizeof(id));
             }
             for (int i = 0; i < 2; i++) {

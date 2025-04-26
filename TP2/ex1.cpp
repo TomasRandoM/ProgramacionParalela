@@ -1,64 +1,69 @@
 #include <iostream>
 #include <pthread.h>
 #include <vector>
-#include <mutex>
+#include <unistd.h>
+#include <cstdlib> 
 
 using namespace std;
 
-mutex mtx;
-vector<int> cola;
-void* usuario(void* args);
-void* impresora(void* args);
+int compartida = 0;
+void* tarea1(void* identificador);
+void* tarea2(void* identificador);
 
-int main() {
-    vector<pthread_t> hilos(11);
-    int r = pthread_create(&hilos[0], NULL, impresora, NULL);
-
-    if (r != 0) {
-        throw runtime_error("Error creando hilo.");
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        cout << "Debe usar 2 argumentos" << endl;
+        return 1;
     }
 
-    for (int i = 0; i < 10; i++) {
-        r = pthread_create(&hilos[i + 1], NULL, usuario, (void*) (long) (i + 1));
+    int N = stoi(string(argv[1]));
+    int M = stoi(string(argv[2]));
+
+    vector<pthread_t> hilos1(N);
+    vector<pthread_t> hilos2(M);
+
+    for (int i = 0; i < N; i++) {
+        int r = pthread_create(&hilos1[i], NULL, tarea1, (void*) (long) i);
+
         if (r != 0) {
-            throw runtime_error("Error creando hilo.");
+            cout << "Error creando hilo" << endl;
         }
     }
 
-    for (int i = 0; i < 11; i++) {
-        pthread_join(hilos[i], NULL);
+    for (int i = 0; i < M; i++) {
+        int r = pthread_create(&hilos2[i], NULL, tarea2, (void*) (long) i);
+
+        if (r != 0) {
+            cout << "Error creando hilo" << endl;
+        }
     }
+
+    for (int i = 0; i < N; i++) {
+        pthread_join(hilos1[i], NULL);
+    }
+
+    for (int i = 0; i < M; i++) {
+        pthread_join(hilos2[i], NULL);
+    }
+
+    cout << "Fin del programa" << endl;
     return 0;
 }
 
-void* impresora(void* args) {
-    bool stop = false;
-    int cont = 0;
-    while (stop != true) {
-        if (!cola.empty()) {
-            unique_lock<mutex> lock(mtx); //En este ejercicio más que nada sirve para proteger el cout
-            cont++;
-            cola.pop_back();
-            cout << "Imprimiendo archivo de usuario" << endl;
-            if (cont == 10) {
-                stop = true;
-                return NULL;
-            }    
-        }   
-    }
-    return NULL;   
+void* tarea1(void* identificador) {
+    cout << "Thread1 instancia " << (long) identificador << " " << endl;
+    double randomTime = ((double) rand()) / RAND_MAX;
+    
+    sleep(randomTime);
+    compartida = compartida + 1;
+    return NULL;
 }
 
-void* usuario(void* args) {
-    bool stop = false;
-    while (stop != true) {
-        unique_lock<mutex> lock(mtx);
-        if (cola.empty()) {
-            int id = (int) (long) args;
-            stop = true;
-            cola.push_back(id);
-            cout << "Usuario " << id << " agregó archivo a la cola de impresión" << endl;
-        }
-    }
+void* tarea2(void* identificador) {
+    cout << "Thread2 instancia " << (long) identificador << " " << endl;
+    double randomTime = ((double) rand()) / RAND_MAX;
+    
+    sleep(randomTime);
+    cout << compartida << endl;
     return NULL;
 }
