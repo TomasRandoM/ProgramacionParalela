@@ -37,10 +37,12 @@ double ejemplo(int i, int j) {
 }
 
 double t1(int i) {
+    sleep(1);
     return i;
 }
 
 double t2(int j) {
+    sleep(2);
     return j;
 }
 
@@ -50,9 +52,11 @@ double t3(double a, double b, int i) {
 }
 
 double t4(double a, double c) {
+    sleep(1);
     return a / c;
 }
 
 double t5(double b, double c) {
+    sleep(2);
     return b / c;
 }
