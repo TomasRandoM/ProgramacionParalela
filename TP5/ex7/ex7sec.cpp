@@ -1,3 +1,9 @@
+//Programación paralela y distribuida
+//Tomás Rando
+//29/4/2025
+//Versión SECUENCIAL del ejercicio
+//Compilación: mpic++ ex7sec.cpp -o ex7sec
+//Ejecución: ./ex7sec
 #include <chrono>
 #include <iostream>
 #include <unistd.h>

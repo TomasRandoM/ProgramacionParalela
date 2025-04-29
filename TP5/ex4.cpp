@@ -1,3 +1,8 @@
+//Programación paralela y distribuida
+//Tomás Rando
+//29/4/2025
+//Compilación: mpic++ ex4.cpp -o ex4
+//Ejecución: mpirun -np 5 ex4
 #include <iostream>
 #include <vector>
 #include <sys/wait.h>

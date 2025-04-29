@@ -1,3 +1,9 @@
+//Programación paralela y distribuida
+//Tomás Rando
+//29/4/2025
+//Versión SECUENCIAL del ejercicio
+//Compilación: g++ main1p.cpp Prime.cpp -o ex9sec
+//Ejecución: ./ex9sec (límite superior del rango)
 #include "Prime.h"
 #include <mpi.h>
 #include <iostream>

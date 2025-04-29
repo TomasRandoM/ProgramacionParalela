@@ -1,3 +1,9 @@
+//Programación paralela y distribuida
+//Tomás Rando
+//29/4/2025
+//Compilación: mpic++ main.cpp Tablero.cpp -o ex5
+//Ejecución: mpirun -np 5 ex5
+
 #include "Tablero.h"
 #include <vector>
 #include <iostream>

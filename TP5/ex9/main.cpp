@@ -1,5 +1,9 @@
+//Programación paralela y distribuida
+//Tomás Rando
+//29/4/2025
+//Compilación: mpic++ main.cpp Prime.cpp -o ex9
+//Ejecución: mpirun -np 5 ex9 (límite superior del rango)
 #include "Prime.h"
-#include <thread>
 #include <functional>
 #include <mpi.h>
 #include <iostream>

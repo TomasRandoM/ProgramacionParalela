@@ -1,3 +1,8 @@
+//Programación paralela y distribuida
+//Tomás Rando
+//29/4/2025
+//Compilación: mpic++ ex6.cpp -o ex6
+//Ejecución: mpirun -np 6 ex6
 #include <mpi.h>
 #include <iostream>
 #include <cstring>
